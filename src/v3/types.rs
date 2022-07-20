@@ -8,7 +8,7 @@ use self::fastpbkdf2::pbkdf2_hmac_sha1;
 use std::iter::repeat;
 use self::crypto::hmac::Hmac;
 use self::crypto::sha2::Sha256;
-use self::rand::{Rng, OsRng};
+use self::rand::{rngs::OsRng, RngCore};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::result::Result as StdResult;
 use std;
@@ -105,7 +105,9 @@ pub type PlainText = [u8];
 pub type Message = Vec<u8>;
 
 fn random_data_of_len(size: usize) -> StdResult<Vec<u8>, std::io::Error> {
-    Ok(try!(OsRng::new().map(|mut gen| gen.gen_iter().take(size).collect::<Vec<u8>>())))
+    let mut data = vec![0; size];
+    try!(OsRng.try_fill_bytes(&mut data));
+    Ok(data)
 }
 
 impl IV {

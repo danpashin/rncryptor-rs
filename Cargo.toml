@@ -12,8 +12,8 @@ license = "MIT"
 [dependencies]
 rust-crypto = "~0.2"
 fastpbkdf2 = "~0.1.0"
-rand = "~0.3"
+rand = "~0.8.5"
 
 [dev-dependencies]
 rustc-serialize = "0.3"
-quickcheck = "0.4.1"
+quickcheck = "1.0.3"
