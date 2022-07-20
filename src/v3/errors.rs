@@ -1,5 +1,4 @@
 
-extern crate crypto;
 
 use std::result::Result as StdResult;
 use std;
@@ -23,10 +22,8 @@ pub enum ErrorKind {
     IVGenerationFailed(std::io::Error),
     /// The Salt generation failed.
     SaltGenerationFailed(std::io::Error),
-    /// The encryption failed, due to an error raised from the downstream crypto layer.
-    EncryptionFailed(crypto::symmetriccipher::SymmetricCipherError),
-    /// The decryption failed, due to an error raised from the downstream crypto layer.
-    DecryptionFailed(crypto::symmetriccipher::SymmetricCipherError),
+    /// The decryption failed due to invalid padding.
+    UnpadError,
 }
 
 #[derive(Debug)]

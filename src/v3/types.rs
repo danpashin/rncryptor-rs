@@ -1,19 +1,21 @@
 
 extern crate rand;
-extern crate crypto;
 extern crate fastpbkdf2;
+extern crate hmac;
+extern crate sha2;
 
-use self::crypto::mac::Mac;
 use self::fastpbkdf2::pbkdf2_hmac_sha1;
 use std::iter::repeat;
-use self::crypto::hmac::Hmac;
-use self::crypto::sha2::Sha256;
 use self::rand::{rngs::OsRng, RngCore};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::result::Result as StdResult;
 use std;
+use self::sha2::Sha256;
+use self::hmac::{Hmac, Mac};
 
 use v3::errors::{Result, Error, ErrorKind};
+
+type HmacSha256 = Hmac<Sha256>;
 
 /// An `EncryptionKey`, which can be constructed from a `EncryptionSalt` and a password.
 #[derive (Clone, Debug)]
@@ -155,9 +157,13 @@ impl HMAC {
         input.extend(h);
         input.extend(txt);
 
-        let mut hmac = Hmac::new(Sha256::new(), key);
-        hmac.input(&input);
-        Ok(HMAC(Vec::from(hmac.result().code())))
+        let mut mac = HmacSha256::new_from_slice(key).map_err(|error| {
+            Error::new(ErrorKind::HMACGenerationFailed, error.to_string())
+        })?;
+        mac.update(&input);
+
+        let result = mac.finalize().into_bytes().to_vec();
+        Ok(HMAC(result))
     }
 
     pub fn is_equal_in_consistent_time_to(&self, &HMAC(ref other): &HMAC) -> bool {

@@ -1,10 +1,11 @@
-extern crate crypto;
+extern crate aes;
+extern crate cbc;
 
+use self::aes::cipher::{block_padding::{NoPadding, Pkcs7}, BlockEncryptMut, KeyIvInit};
 use v3::types::*;
 use v3::errors::{Result, Error, ErrorKind};
-use self::crypto::buffer::{WriteBuffer, ReadBuffer, RefReadBuffer, RefWriteBuffer, BufferResult};
-use self::crypto::aes;
-use self::crypto::blockmodes;
+
+type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 
 #[derive(Clone)]
 pub struct Encryptor {
@@ -56,42 +57,32 @@ impl Encryptor {
         })
     }
 
-    pub fn cipher_text<X: blockmodes::PaddingProcessor + Send + 'static>(&self, padding: X, plain_text: &PlainText) -> Result<CipherText> {
+    pub fn cipher_text(&self, plain_text: &PlainText) -> Result<CipherText> {
         let iv = self.iv.to_vec();
         let key = self.encryption_key.to_vec();
-        let mut encryptor = aes::cbc_encryptor(
-            aes::KeySize::KeySize256,
-            key,
-            iv,
-            padding);
 
-        // Usage taken from: https://github.com/DaGenix/rust-crypto/blob/master/examples/symmetriccipher.rs
-        let mut final_result = Vec::<u8>::new();
-        let mut buffer = [0; 4096];
-        let mut write_buffer = RefWriteBuffer::new(&mut buffer);
-        let mut read_buffer  = RefReadBuffer::new(plain_text);
+        let encryptor = Aes256CbcEnc::new(key.as_slice().into(), iv.as_slice().into());
+        let encrypted = encryptor.encrypt_padded_vec_mut::<NoPadding>(&plain_text);
 
-        loop {
-            let result = try!(encryptor.encrypt(&mut read_buffer, &mut write_buffer, true)
-                              .map_err(ErrorKind::EncryptionFailed));
-            final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
+        Ok(CipherText(encrypted))
+    }
 
-            match result {
-                BufferResult::BufferUnderflow => break,
-                BufferResult::BufferOverflow => { }
-            }
-        }
+    pub fn cipher_text_pkcs7(&self, plain_text: &PlainText) -> Result<CipherText> {
+        let iv = self.iv.to_vec();
+        let key = self.encryption_key.to_vec();
 
-        Ok(CipherText(final_result))
+        let encryptor = Aes256CbcEnc::new(key.as_slice().into(), iv.as_slice().into());
+        let encrypted = encryptor.encrypt_padded_vec_mut::<Pkcs7>(&plain_text);
 
+        Ok(CipherText(encrypted))
     }
 
     pub fn encrypt(&self, plain_text: &PlainText) -> Result<Message> {
 
         // If the input is empty, use the Pkcs7 padding as input.
         let cipher_text = match plain_text.is_empty() {
-            true  => try!(self.cipher_text(blockmodes::NoPadding, vec![16;16].as_slice())),
-            false => try!(self.cipher_text(blockmodes::PkcsPadding, &plain_text)),
+            true  => try!(self.cipher_text(vec![16;16].as_slice())),
+            false => try!(self.cipher_text_pkcs7(&plain_text)),
         };
 
         let CipherText(ref text) = cipher_text;

@@ -1,11 +1,11 @@
+extern crate aes;
+extern crate cbc;
 
-extern crate crypto;
-
+use self::aes::cipher::{KeyIvInit, block_padding::Pkcs7, BlockDecryptMut};
 use v3::types::*;
 use v3::errors::{Result, Error, ErrorKind};
-use self::crypto::aes;
-use self::crypto::blockmodes;
-use self::crypto::buffer::{WriteBuffer, ReadBuffer, RefReadBuffer, RefWriteBuffer, BufferResult};
+
+type Aes256CbcDec = self::cbc::Decryptor<aes::Aes256>;
 
 /// A "Decryptor", which is nothing more than a data structure to keep around the RNCryptor context
 pub struct Decryptor {
@@ -50,31 +50,13 @@ impl Decryptor {
     fn plain_text(&self, cipher_text: &[u8]) -> Result<Message> {
         let iv  = self.iv.to_vec();
         let key = self.encryption_key.to_vec();
-        let mut decryptor = aes::cbc_decryptor(
-            aes::KeySize::KeySize256,
-            key,
-            iv,
-            blockmodes::PkcsPadding);
 
-        // Usage taken from: https://github.com/DaGenix/rust-crypto/blob/master/examples/symmetriccipher.rs
-        let mut final_result = Vec::<u8>::new();
-        let mut buffer = [0; 4096];
-        let mut write_buffer = RefWriteBuffer::new(&mut buffer);
-        let mut read_buffer  = RefReadBuffer::new(cipher_text);
+        let decryptor = Aes256CbcDec::new(key.as_slice().into(), iv.as_slice().into());
+        let decrypted = decryptor.decrypt_padded_vec_mut::<Pkcs7>(&cipher_text).map_err(|error| {
+            Error::new(ErrorKind::UnpadError, error.to_string())
+        })?;
 
-        loop {
-            let result = try!(decryptor.decrypt(&mut read_buffer, &mut write_buffer, true)
-                              .map_err(ErrorKind::DecryptionFailed));
-            final_result.extend(write_buffer.take_read_buffer().take_remaining().iter().map(|&i| i));
-
-            match result {
-                BufferResult::BufferUnderflow => break,
-                BufferResult::BufferOverflow => { }
-            }
-        }
-
-        Ok(final_result)
-
+        Ok(decrypted)
     }
 
     /// Decrypts a `cipher_text`, returning a `Message` or an `Error`.
