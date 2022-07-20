@@ -10,9 +10,9 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
-rust-crypto = "~0.2"
-fastpbkdf2 = "~0.1.0"
-rand = "~0.8.5"
+rust-crypto = "0.2.36"
+fastpbkdf2 = "0.1.0"
+rand = "0.8.5"
 
 [dev-dependencies]
 rustc-serialize = "0.3"
