@@ -22,14 +22,12 @@ impl Encryptor {
                          iv: IV)
                          -> Result<Encryptor> {
 
-        if password.len() <= 0 {
-            return Err(Error::new(ErrorKind::WrongInputSize(password.len()),
-                                  "Password length cannot be <= 0.".to_owned()));
+        if password.is_empty() {
+            return Err(Error::new(ErrorKind::WrongInputSize(0),
+                                  "Password length cannot be empty.".to_owned()));
         }
 
-        let mut header: Vec<u8> = Vec::new();
-        header.push(3);
-        header.push(1);
+        let mut header: Vec<u8> = vec![3, 1];
         header.extend(es.as_slice().iter());
         header.extend(hs.as_slice().iter());
         header.extend(iv.as_slice().iter());
@@ -38,22 +36,20 @@ impl Encryptor {
             encryption_key: EncryptionKey::new(&es, password.as_bytes()),
             hmac_key: HMACKey::new(&hs, password.as_bytes()),
             header: Header(header),
-            iv: iv,
+            iv,
         })
     }
 
     pub fn from_keys(ek: EncryptionKey, hk: HMACKey, iv: IV) -> Result<Encryptor> {
 
-        let mut header: Vec<u8> = Vec::new();
-        header.push(3);
-        header.push(0);
+        let mut header: Vec<u8> = vec![3, 0];
         header.extend(iv.as_slice().iter());
 
         Ok(Encryptor {
             encryption_key: ek,
             hmac_key: hk,
             header: Header(header),
-            iv: iv,
+            iv,
         })
     }
 
@@ -62,7 +58,7 @@ impl Encryptor {
         let key = self.encryption_key.to_vec();
 
         let encryptor = Aes256CbcEnc::new(key.as_slice().into(), iv.as_slice().into());
-        let encrypted = encryptor.encrypt_padded_vec_mut::<NoPadding>(&plain_text);
+        let encrypted = encryptor.encrypt_padded_vec_mut::<NoPadding>(plain_text);
 
         Ok(CipherText(encrypted))
     }
@@ -72,7 +68,7 @@ impl Encryptor {
         let key = self.encryption_key.to_vec();
 
         let encryptor = Aes256CbcEnc::new(key.as_slice().into(), iv.as_slice().into());
-        let encrypted = encryptor.encrypt_padded_vec_mut::<Pkcs7>(&plain_text);
+        let encrypted = encryptor.encrypt_padded_vec_mut::<Pkcs7>(plain_text);
 
         Ok(CipherText(encrypted))
     }
@@ -81,13 +77,13 @@ impl Encryptor {
 
         // If the input is empty, use the Pkcs7 padding as input.
         let cipher_text = match plain_text.is_empty() {
-            true  => try!(self.cipher_text(vec![16;16].as_slice())),
-            false => try!(self.cipher_text_pkcs7(&plain_text)),
+            true  => self.cipher_text(vec![16;16].as_slice())?,
+            false => self.cipher_text_pkcs7(plain_text)?,
         };
 
         let CipherText(ref text) = cipher_text;
 
-        let HMAC(hmac) = try!(HMAC::new(&self.header, text.as_slice(), &self.hmac_key));
+        let HMAC(hmac) = HMAC::new(&self.header, text.as_slice(), &self.hmac_key)?;
 
         let mut message = Vec::new();
 

@@ -11,7 +11,7 @@ fn can_generate_iv() {
 #[test]
 fn iv_is_16_elem_long() {
     match IV::new() {
-        Err(e) => panic!(e),
+        Err(e) => panic!("{:?}", e),
         Ok(iv) => assert_eq!(iv.as_slice().len(), 16),
     }
 }

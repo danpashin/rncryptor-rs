@@ -25,7 +25,7 @@ fn test_vector(vector: TestVector) {
     let result = Encryptor::from_keys(encryption_key, hmac_key, iv)
         .and_then(|e| e.encrypt(&plain_text));
     match result {
-        Err(e) => panic!(e),
+        Err(e) => panic!("{:?}", e),
         Ok(encrypted) => assert_eq!(*encrypted.as_slice(), *ciphertext.as_slice()),
     }
 }

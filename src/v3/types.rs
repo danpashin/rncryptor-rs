@@ -64,11 +64,11 @@ impl Salt {
 #[derive (Clone, Debug, PartialEq, Eq)]
 pub struct HMACKey(Vec<u8>);
 
-fn new_key_with_salt<'a>(salt: &Salt, password: &'a [u8]) -> Vec<u8> {
+fn new_key_with_salt(salt: &Salt, password: &[u8]) -> Vec<u8> {
     let Salt(ref salt) = *salt;
     let mut result: Vec<u8> = repeat(0).take(32).collect();
-    let mut password_mut = password.clone();
-    pbkdf2_hmac_sha1(&mut password_mut, &salt[..], 10_000, &mut result[..]);
+    // let mut password_mut = password.clone();
+    pbkdf2_hmac_sha1(password, &salt[..], 10_000, &mut result[..]);
     result
 }
 
@@ -91,7 +91,7 @@ pub struct Header(pub Vec<u8>);
 pub struct IV(Vec<u8>);
 
 impl Display for IV {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match *self {
             IV(ref v) => write!(f, "{:?}", v),
         }
@@ -108,7 +108,7 @@ pub type Message = Vec<u8>;
 
 fn random_data_of_len(size: usize) -> StdResult<Vec<u8>, std::io::Error> {
     let mut data = vec![0; size];
-    try!(OsRng.try_fill_bytes(&mut data));
+    OsRng.try_fill_bytes(&mut data)?;
     Ok(data)
 }
 

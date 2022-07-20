@@ -18,10 +18,10 @@ use v3::errors::{Result};
 ///!
 ///! **Note: This is NOT a streaming function.**
 pub fn encrypt(password: &str, plain_text: &PlainText) -> Result<Message> {
-    let esalt = try!(Salt::new());
-    let hsalt = try!(Salt::new());
-    let iv = try!(IV::new());
-    let encryptor = try!(Encryptor::from_password(password, esalt, hsalt, iv));
+    let esalt = Salt::new()?;
+    let hsalt = Salt::new()?;
+    let iv = IV::new()?;
+    let encryptor = Encryptor::from_password(password, esalt, hsalt, iv)?;
     encryptor.encrypt(plain_text)
 }
 
@@ -31,6 +31,6 @@ pub fn encrypt(password: &str, plain_text: &PlainText) -> Result<Message> {
 ///!
 ///! **Note: This is NOT a streaming function.**
 pub fn decrypt(password: &str, message: &Message) -> Result<Vec<u8>> {
-    let decryptor = try!(Decryptor::from(password, message));
+    let decryptor = Decryptor::from(password, message)?;
     decryptor.decrypt(message)
 }

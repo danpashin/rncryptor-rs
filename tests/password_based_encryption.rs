@@ -26,7 +26,7 @@ fn test_vector(vector: TestVector) {
     let result = Encryptor::from_password(vector.password, encryption_salt, hmac_salt, iv)
         .and_then(|e| e.encrypt(&plain_text));
     match result {
-        Err(e) => panic!(e),
+        Err(e) => panic!("{:?}", e),
         Ok(encrypted) => assert_eq!(*encrypted.as_slice(), *ciphertext.as_slice()),
     }
 }

@@ -36,13 +36,13 @@ impl Decryptor {
         let hmac_key = HMACKey::new(&hmac_salt, password.as_bytes());
 
         Ok(Decryptor {
-            version: version,
-            options: options,
-            encryption_salt: encryption_salt,
-            encryption_key: encryption_key,
-            hmac_key: hmac_key,
-            hmac_salt: hmac_salt,
-            iv: iv,
+            version,
+            options,
+            encryption_salt,
+            encryption_key,
+            hmac_key,
+            hmac_salt,
+            iv,
         })
 
     }
@@ -52,7 +52,7 @@ impl Decryptor {
         let key = self.encryption_key.to_vec();
 
         let decryptor = Aes256CbcDec::new(key.as_slice().into(), iv.as_slice().into());
-        let decrypted = decryptor.decrypt_padded_vec_mut::<Pkcs7>(&cipher_text).map_err(|error| {
+        let decrypted = decryptor.decrypt_padded_vec_mut::<Pkcs7>(cipher_text).map_err(|error| {
             Error::new(ErrorKind::UnpadError, error.to_string())
         })?;
 
@@ -62,9 +62,7 @@ impl Decryptor {
     /// Decrypts a `cipher_text`, returning a `Message` or an `Error`.
     pub fn decrypt(&self, cipher_text: &[u8]) -> Result<Message> {
 
-        let mut header: Vec<u8> = Vec::new();
-        header.push(3);
-        header.push(1);
+        let mut header: Vec<u8> = vec![3, 1];
         header.extend(self.encryption_salt.as_slice().iter());
         header.extend(self.hmac_salt.as_slice().iter());
         header.extend(self.iv.as_slice().iter());
@@ -76,10 +74,10 @@ impl Decryptor {
 
         let encrypted = cipher_text_vec.as_slice();
 
-        let message = try!(self.plain_text(encrypted));
+        let message = self.plain_text(encrypted)?;
 
         let hmac = HMAC(hmac0);
-        let computed_hmac = try!(HMAC::new(&Header(header), cipher_text_vec.as_slice(), &self.hmac_key));
+        let computed_hmac = HMAC::new(&Header(header), cipher_text_vec.as_slice(), &self.hmac_key)?;
 
         match hmac.is_equal_in_consistent_time_to(&computed_hmac) {
             true  => Ok(message),

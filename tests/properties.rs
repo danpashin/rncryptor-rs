@@ -9,7 +9,7 @@ fn test_simple_roundtrip() {
     let result = v3::encrypt("password", "secret".as_bytes())
         .and_then(|encrypted| v3::decrypt("password", &encrypted));
     match result {
-        Err(e) => panic!(format!("{:?}", e.kind)),
+        Err(e) => panic!("{:?}", e.kind),
         Ok(v) => assert_eq!(v, "secret".as_bytes().to_vec()),
     }
 }

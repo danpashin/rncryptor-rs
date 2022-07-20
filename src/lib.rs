@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+#![warn(rust_2018_idioms)]
 
 /*!
 `rncryptor-rs` is a pure Rust implementation of the [RNCryptor](https://github.com/RNCryptor) file
