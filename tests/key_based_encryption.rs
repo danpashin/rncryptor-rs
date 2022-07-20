@@ -1,8 +1,4 @@
-extern crate rncryptor;
-extern crate hex;
-
-use rncryptor::v3::types::*;
-use rncryptor::v3::encryptor::Encryptor;
+use rncryptor::v3::{encryptor::Encryptor, types::*};
 
 struct TestVector {
     encryption_key: &'static str,
@@ -22,8 +18,8 @@ fn test_vector(vector: TestVector) {
     let iv = IV::from(decode_hex(vector.iv));
     let plain_text = decode_hex(vector.plain_text);
     let ciphertext = decode_hex(vector.cipher_text);
-    let result = Encryptor::from_keys(encryption_key, hmac_key, iv)
-        .and_then(|e| e.encrypt(&plain_text));
+    let result =
+        Encryptor::from_keys(encryption_key, hmac_key, iv).and_then(|e| e.encrypt(&plain_text));
     match result {
         Err(e) => panic!("{:?}", e),
         Ok(encrypted) => assert_eq!(*encrypted.as_slice(), *ciphertext.as_slice()),

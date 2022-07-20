@@ -1,6 +1,3 @@
-extern crate quickcheck;
-extern crate rncryptor;
-
 use quickcheck::QuickCheck;
 use rncryptor::v3;
 
@@ -24,5 +21,7 @@ fn test_roundtrip() {
             Ok(v) => v == message,
         }
     }
-    QuickCheck::new().tests(15).quickcheck(encrypt_decrypt_yields_the_same as fn(Vec<u8>) -> bool);
+    QuickCheck::new()
+        .tests(15)
+        .quickcheck(encrypt_decrypt_yields_the_same as fn(Vec<u8>) -> bool);
 }

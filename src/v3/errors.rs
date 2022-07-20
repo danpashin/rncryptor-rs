@@ -1,7 +1,5 @@
-
-
-use std::result::Result as StdResult;
 use std;
+use std::result::Result as StdResult;
 
 pub type Result<T> = StdResult<T, Error>;
 

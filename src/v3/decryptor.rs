@@ -1,6 +1,8 @@
-use aes::cipher::{KeyIvInit, block_padding::Pkcs7, BlockDecryptMut};
-use super::types::*;
-use super::errors::{Result, Error, ErrorKind};
+use super::{
+    errors::{Error, ErrorKind, Result},
+    types::*,
+};
+use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, KeyIvInit};
 
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
@@ -20,8 +22,10 @@ impl Decryptor {
     pub fn from(password: &str, message: &[u8]) -> Result<Decryptor> {
         let msg_len = message.len();
         if msg_len < 66 {
-            return Err(Error::new(ErrorKind::NotEnoughInput(msg_len),
-                                  "Decryption failed, not enough input.".to_owned()));
+            return Err(Error::new(
+                ErrorKind::NotEnoughInput(msg_len),
+                "Decryption failed, not enough input.".to_owned(),
+            ));
         }
 
         let version = message[0];
@@ -41,24 +45,22 @@ impl Decryptor {
             hmac_salt,
             iv,
         })
-
     }
 
     fn plain_text(&self, cipher_text: &[u8]) -> Result<Message> {
-        let iv  = self.iv.to_vec();
+        let iv = self.iv.to_vec();
         let key = self.encryption_key.to_vec();
 
         let decryptor = Aes256CbcDec::new(key.as_slice().into(), iv.as_slice().into());
-        let decrypted = decryptor.decrypt_padded_vec_mut::<Pkcs7>(cipher_text).map_err(|error| {
-            Error::new(ErrorKind::UnpadError, error.to_string())
-        })?;
+        let decrypted = decryptor
+            .decrypt_padded_vec_mut::<Pkcs7>(cipher_text)
+            .map_err(|error| Error::new(ErrorKind::UnpadError, error.to_string()))?;
 
         Ok(decrypted)
     }
 
     /// Decrypts a `cipher_text`, returning a `Message` or an `Error`.
     pub fn decrypt(&self, cipher_text: &[u8]) -> Result<Message> {
-
         let mut header: Vec<u8> = vec![3, 1];
         header.extend(self.encryption_salt.as_slice().iter());
         header.extend(self.hmac_salt.as_slice().iter());
@@ -77,8 +79,11 @@ impl Decryptor {
         let computed_hmac = HMAC::new(&Header(header), cipher_text_vec.as_slice(), &self.hmac_key)?;
 
         match hmac.is_equal_in_consistent_time_to(&computed_hmac) {
-            true  => Ok(message),
-            false => Err(Error::new(ErrorKind::HMACValidationFailed, "HMAC mismatch.".to_owned())),
+            true => Ok(message),
+            false => Err(Error::new(
+                ErrorKind::HMACValidationFailed,
+                "HMAC mismatch.".to_owned(),
+            )),
         }
     }
 }

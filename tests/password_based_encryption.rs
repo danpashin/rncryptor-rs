@@ -1,8 +1,7 @@
-extern crate rncryptor;
-extern crate hex;
-
-use rncryptor::v3::types::{IV, Salt};
-use rncryptor::v3::encryptor::Encryptor;
+use rncryptor::v3::{
+    encryptor::Encryptor,
+    types::{Salt, IV},
+};
 
 struct TestVector {
     password: &'static str,

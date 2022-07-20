@@ -1,10 +1,8 @@
 #![feature(test)]
-extern crate test;
-extern crate hex;
-extern crate rncryptor;
 
-use rncryptor::v3::encryptor::Encryptor;
-use rncryptor::v3::types::*;
+extern crate test;
+
+use rncryptor::v3::{encryptor::Encryptor, types::*};
 use test::Bencher;
 
 #[bench]

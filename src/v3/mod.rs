@@ -1,17 +1,16 @@
-
+///! "Low-level" decryption abstractions.
+pub mod decryptor;
+///! "Low-level" encryption abstractions.
+pub mod encryptor;
 ///! `Error` and `ErrorKind` types.
 pub mod errors;
 ///! The types.
 pub mod types;
-///! "Low-level" encryption abstractions.
-pub mod encryptor;
-///! "Low-level" decryption abstractions.
-pub mod decryptor;
 
-use types::{Salt, IV, PlainText, Message};
-use encryptor::{Encryptor};
-use decryptor::{Decryptor};
-use errors::{Result};
+use decryptor::Decryptor;
+use encryptor::Encryptor;
+use errors::Result;
+use types::{Message, PlainText, Salt, IV};
 
 ///! Encrypts a `PlainText` with the given password, producing either an encrypted
 ///! `Message` or an `Error` otherwise.

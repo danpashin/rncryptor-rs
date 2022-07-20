@@ -1,7 +1,11 @@
-
-use aes::cipher::{block_padding::{NoPadding, Pkcs7}, BlockEncryptMut, KeyIvInit};
-use super::types::*;
-use super::errors::{Result, Error, ErrorKind};
+use super::{
+    errors::{Error, ErrorKind, Result},
+    types::*,
+};
+use aes::cipher::{
+    block_padding::{NoPadding, Pkcs7},
+    BlockEncryptMut, KeyIvInit,
+};
 
 type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 
@@ -14,15 +18,17 @@ pub struct Encryptor {
 }
 
 impl Encryptor {
-    pub fn from_password(password: &str,
-                         es: EncryptionSalt,
-                         hs: HMACSalt,
-                         iv: IV)
-                         -> Result<Encryptor> {
-
+    pub fn from_password(
+        password: &str,
+        es: EncryptionSalt,
+        hs: HMACSalt,
+        iv: IV,
+    ) -> Result<Encryptor> {
         if password.is_empty() {
-            return Err(Error::new(ErrorKind::WrongInputSize(0),
-                                  "Password length cannot be empty.".to_owned()));
+            return Err(Error::new(
+                ErrorKind::WrongInputSize(0),
+                "Password length cannot be empty.".to_owned(),
+            ));
         }
 
         let mut header: Vec<u8> = vec![3, 1];
@@ -39,7 +45,6 @@ impl Encryptor {
     }
 
     pub fn from_keys(ek: EncryptionKey, hk: HMACKey, iv: IV) -> Result<Encryptor> {
-
         let mut header: Vec<u8> = vec![3, 0];
         header.extend(iv.as_slice().iter());
 
@@ -72,10 +77,9 @@ impl Encryptor {
     }
 
     pub fn encrypt(&self, plain_text: &PlainText) -> Result<Message> {
-
         // If the input is empty, use the Pkcs7 padding as input.
         let cipher_text = match plain_text.is_empty() {
-            true  => self.cipher_text(vec![16;16].as_slice())?,
+            true => self.cipher_text(vec![16; 16].as_slice())?,
             false => self.cipher_text_pkcs7(plain_text)?,
         };
 

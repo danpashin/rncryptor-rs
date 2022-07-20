@@ -1,6 +1,3 @@
-
-extern crate rncryptor;
-
 use rncryptor::v3::types::*;
 
 #[test]

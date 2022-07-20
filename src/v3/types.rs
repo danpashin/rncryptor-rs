@@ -1,18 +1,18 @@
+use super::errors::{Error, ErrorKind, Result};
 use fastpbkdf2::pbkdf2_hmac_sha1;
-use std::iter::repeat;
-use rand::{rngs::OsRng, RngCore};
-use std::fmt::{Display, Formatter, Result as FmtResult};
-use std::result::Result as StdResult;
-use std;
-use sha2::Sha256;
 use hmac::{Hmac, Mac};
-
-use super::errors::{Result, Error, ErrorKind};
+use rand::{rngs::OsRng, RngCore};
+use sha2::Sha256;
+use std::{
+    fmt::{Display, Formatter, Result as FmtResult},
+    iter::repeat,
+    result::Result as StdResult,
+};
 
 type HmacSha256 = Hmac<Sha256>;
 
 /// An `EncryptionKey`, which can be constructed from a `EncryptionSalt` and a password.
-#[derive (Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct EncryptionKey(Vec<u8>);
 
 impl<'a> EncryptionKey {
@@ -32,17 +32,17 @@ impl<'a> EncryptionKey {
 }
 
 /// A `Salt`, which can be completely random or user-constructed.
-#[derive (Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct Salt(pub Vec<u8>);
 
 impl Salt {
     /// Creates a new, completely random `Salt` of 8 bytes.
     pub fn new() -> Result<Salt> {
         match random_data_of_len(8) {
-            Err(e) => {
-                Err(Error::new(ErrorKind::SaltGenerationFailed(e),
-                               "Salt Generation failed.".to_owned()))
-            }
+            Err(e) => Err(Error::new(
+                ErrorKind::SaltGenerationFailed(e),
+                "Salt Generation failed.".to_owned(),
+            )),
             Ok(v) => Ok(Salt(v)),
         }
     }
@@ -55,7 +55,7 @@ impl Salt {
 }
 
 /// A `HMACKey`, which can be constructed from an `HMACSalt` and a password.
-#[derive (Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HMACKey(Vec<u8>);
 
 fn new_key_with_salt(salt: &Salt, password: &[u8]) -> Vec<u8> {
@@ -77,11 +77,11 @@ impl<'a> HMACKey {
 }
 
 /// A RNCryptor `Header` built during the encryption/decryption process.
-#[derive (Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct Header(pub Vec<u8>);
 
 /// An `IV` (Initialization Vector) which can be completely random or user constructed.
-#[derive (Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct IV(Vec<u8>);
 
 impl Display for IV {
@@ -110,10 +110,10 @@ impl IV {
     /// Creates a new, completely random `IV` (Initialization Vector) of 16 bytes.
     pub fn new() -> Result<IV> {
         match random_data_of_len(16) {
-            Err(e) => {
-                Err(Error::new(ErrorKind::IVGenerationFailed(e),
-                               "IV Generation failed.".to_owned()))
-            }
+            Err(e) => Err(Error::new(
+                ErrorKind::IVGenerationFailed(e),
+                "IV Generation failed.".to_owned(),
+            )),
             Ok(v) => Ok(IV(v)),
         }
     }
@@ -151,9 +151,8 @@ impl HMAC {
         input.extend(h);
         input.extend(txt);
 
-        let mut mac = HmacSha256::new_from_slice(key).map_err(|error| {
-            Error::new(ErrorKind::HMACGenerationFailed, error.to_string())
-        })?;
+        let mut mac = HmacSha256::new_from_slice(key)
+            .map_err(|error| Error::new(ErrorKind::HMACGenerationFailed, error.to_string()))?;
         mac.update(&input);
 
         let result = mac.finalize().into_bytes().to_vec();
@@ -162,7 +161,9 @@ impl HMAC {
 
     pub fn is_equal_in_consistent_time_to(&self, &HMAC(ref other): &HMAC) -> bool {
         let HMAC(ref this) = *self;
-        this.iter().zip(other.iter()).fold(true, |acc, (x, y)| acc && (x == y))
+        this.iter()
+            .zip(other.iter())
+            .fold(true, |acc, (x, y)| acc && (x == y))
     }
 }
 
