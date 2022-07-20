@@ -8,6 +8,7 @@ description = "Rust implementation of the RNCryptor AES file format"
 homepage = "http://rncryptor.github.io/"
 readme = "README.md"
 license = "MIT"
+edition = "2021"
 
 [dependencies]
 aes = "~0.8.1"

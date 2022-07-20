@@ -1,11 +1,8 @@
-extern crate aes;
-extern crate cbc;
+use aes::cipher::{KeyIvInit, block_padding::Pkcs7, BlockDecryptMut};
+use super::types::*;
+use super::errors::{Result, Error, ErrorKind};
 
-use self::aes::cipher::{KeyIvInit, block_padding::Pkcs7, BlockDecryptMut};
-use v3::types::*;
-use v3::errors::{Result, Error, ErrorKind};
-
-type Aes256CbcDec = self::cbc::Decryptor<aes::Aes256>;
+type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 
 /// A "Decryptor", which is nothing more than a data structure to keep around the RNCryptor context
 pub struct Decryptor {

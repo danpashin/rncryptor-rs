@@ -1,19 +1,13 @@
-
-extern crate rand;
-extern crate fastpbkdf2;
-extern crate hmac;
-extern crate sha2;
-
-use self::fastpbkdf2::pbkdf2_hmac_sha1;
+use fastpbkdf2::pbkdf2_hmac_sha1;
 use std::iter::repeat;
-use self::rand::{rngs::OsRng, RngCore};
+use rand::{rngs::OsRng, RngCore};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::result::Result as StdResult;
 use std;
-use self::sha2::Sha256;
-use self::hmac::{Hmac, Mac};
+use sha2::Sha256;
+use hmac::{Hmac, Mac};
 
-use v3::errors::{Result, Error, ErrorKind};
+use super::errors::{Result, Error, ErrorKind};
 
 type HmacSha256 = Hmac<Sha256>;
 

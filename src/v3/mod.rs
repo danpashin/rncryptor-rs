@@ -8,10 +8,10 @@ pub mod encryptor;
 ///! "Low-level" decryption abstractions.
 pub mod decryptor;
 
-use v3::types::{Salt, IV, PlainText, Message};
-use v3::encryptor::{Encryptor};
-use v3::decryptor::{Decryptor};
-use v3::errors::{Result};
+use types::{Salt, IV, PlainText, Message};
+use encryptor::{Encryptor};
+use decryptor::{Decryptor};
+use errors::{Result};
 
 ///! Encrypts a `PlainText` with the given password, producing either an encrypted
 ///! `Message` or an `Error` otherwise.
