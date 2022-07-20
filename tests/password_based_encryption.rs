@@ -1,7 +1,6 @@
-extern crate rustc_serialize;
 extern crate rncryptor;
+extern crate hex;
 
-use rustc_serialize::hex::FromHex;
 use rncryptor::v3::types::{IV, Salt};
 use rncryptor::v3::encryptor::Encryptor;
 
@@ -14,12 +13,16 @@ struct TestVector {
     cipher_text: &'static str,
 }
 
+fn decode_hex(hex: &str) -> Vec<u8> {
+    hex::decode(hex.replace(' ', "")).unwrap()
+}
+
 fn test_vector(vector: TestVector) {
-    let encryption_salt = Salt(vector.encryption_salt.from_hex().unwrap());
-    let hmac_salt = Salt(vector.hmac_salt.from_hex().unwrap());
-    let iv = IV::from(vector.iv.from_hex().unwrap());
-    let plain_text = vector.plain_text.from_hex().unwrap();
-    let ciphertext = vector.cipher_text.from_hex().unwrap();
+    let encryption_salt = Salt(decode_hex(vector.encryption_salt));
+    let hmac_salt = Salt(decode_hex(vector.hmac_salt));
+    let iv = IV::from(decode_hex(vector.iv));
+    let plain_text = decode_hex(vector.plain_text);
+    let ciphertext = decode_hex(vector.cipher_text);
     let result = Encryptor::from_password(vector.password, encryption_salt, hmac_salt, iv)
         .and_then(|e| e.encrypt(&plain_text));
     match result {
