@@ -13,7 +13,7 @@ edition = "2021"
 [dependencies]
 aes = "~0.8.1"
 cbc = { version = "~0.1.2", features = ["std"] }
-fastpbkdf2 = { git = "https://github.com/serprex/rust-fastpbkdf2", rev = "c17581d"}
+fastpbkdf2 = { git = "https://github.com/danpashin/rust-fastpbkdf2", rev = "1ab7dc1"}
 rand = "~0.8.5"
 hmac = "~0.12.1"
 sha2 = "~0.10.2"
