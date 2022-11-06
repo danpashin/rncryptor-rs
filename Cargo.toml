@@ -5,7 +5,7 @@ authors = ["Alfredo Di Napoli <alfredo.dinapoli@gmail.com>"]
 repository = "https://github.com/RNCryptor/rncryptor-rs.git"
 documentation = "https://docs.rs/rncryptor/"
 description = "Rust implementation of the RNCryptor AES file format"
-homepage = "http://rncryptor.github.io/"
+homepage = "https://rncryptor.github.io/"
 readme = "README.md"
 license = "MIT"
 edition = "2021"
@@ -13,7 +13,7 @@ edition = "2021"
 [dependencies]
 aes = "~0.8.1"
 cbc = { version = "~0.1.2", features = ["std"] }
-fastpbkdf2 = "~0.1.0"
+fastpbkdf2 = { git = "https://github.com/serprex/rust-fastpbkdf2", rev = "c17581d"}
 rand = "~0.8.5"
 hmac = "~0.12.1"
 sha2 = "~0.10.2"
