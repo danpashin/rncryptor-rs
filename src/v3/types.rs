@@ -1,11 +1,10 @@
 use super::errors::{Error, ErrorKind, Result};
-use fastpbkdf2::pbkdf2_hmac_sha1;
 use hmac::{Hmac, Mac};
 use rand::{rngs::OsRng, RngCore};
 use sha2::Sha256;
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
-    iter::repeat,
+    num::NonZeroU32,
     result::Result as StdResult,
 };
 
@@ -59,10 +58,14 @@ impl Salt {
 pub struct HMACKey(Vec<u8>);
 
 fn new_key_with_salt(salt: &Salt, password: &[u8]) -> Vec<u8> {
+    use ring::pbkdf2::{derive, PBKDF2_HMAC_SHA1};
+
     let Salt(ref salt) = *salt;
-    let mut result: Vec<u8> = repeat(0).take(32).collect();
-    // let mut password_mut = password.clone();
-    pbkdf2_hmac_sha1(password, &salt[..], 10_000, &mut result[..]);
+    let mut result = vec![0;32];
+
+    let iterations = NonZeroU32::new(10_000).expect("zero iterations when non-zero OwO");
+    derive(PBKDF2_HMAC_SHA1, iterations, &salt[..], password, &mut result);
+
     result
 }
 
