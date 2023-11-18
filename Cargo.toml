@@ -11,12 +11,12 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
-aes = "~0.8.1"
+aes = "~0.8.3"
 cbc = { version = "~0.1.2", features = ["std"] }
 rand = "~0.8.5"
-ring = "0.16.20"
+ring = "0.17.5"
 hmac = "~0.12.1"
-sha2 = "~0.10.2"
+sha2 = "~0.10.8"
 
 [dev-dependencies]
 quickcheck = "1.0.3"
